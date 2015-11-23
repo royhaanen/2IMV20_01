@@ -85,8 +85,8 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
 
     short getVoxel(double[] coord) {
 
-        if (coord[0] < 0 || coord[0] > volume.getDimX() || coord[1] < 0 || coord[1] > volume.getDimY()
-                || coord[2] < 0 || coord[2] > volume.getDimZ()) {
+        if (coord[0] < 0 || coord[0] >= volume.getDimX() || coord[1] < 0 || coord[1] >= volume.getDimY()
+                || coord[2] < 0 || coord[2] >= volume.getDimZ()) {
             return 0;
         }
 
@@ -185,19 +185,20 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         double[] pixelCoord = new double[3];
         double[] volumeCenter = new double[3];
         VectorMath.setVector(volumeCenter, volume.getDimX() / 2, volume.getDimY() / 2, volume.getDimZ() / 2);
+        System.out.println(volume.getDimX() + " " + volume.getDimY() + " " + volume.getDimZ());
 
         // sample on a plane through the origin of the volume data
         double max = volume.getMaximum();
         TFColor voxelColor = new TFColor();
-
+        
         for (int j = 0; j < image.getHeight(); j++) {
             for (int i = 0; i < image.getWidth(); i++) {
                 
                 int maxVal = 0;
         
-                for (int t = 0; t < 6; t++) {
+                for (int t = -90; t <= 90; t++) {
                     
-                    double td = 0.2 * t;
+                    double td = 1 * t;
                     
                     pixelCoord[0] = uVec[0] * (i - imageCenter) + vVec[0] * (j - imageCenter)
                             + volumeCenter[0] + td * viewVec[0];
@@ -206,11 +207,18 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                     pixelCoord[2] = uVec[2] * (i - imageCenter) + vVec[2] * (j - imageCenter)
                             + volumeCenter[2] + td * viewVec[2];
 
+                    
+                    /*
+                    double [] q0 = new double[3];
+                    double [] q1 = new double[3];
+                    
+                    q0 = pixelCoord;
+                    */
+                    
                     int val = getVoxel(pixelCoord);
                     
-                    if (val > maxVal){
+                    if (val > maxVal) 
                         maxVal = val;
-                    }
                 }
                 
                 // Map the intensity to a grey value by linear scaling
