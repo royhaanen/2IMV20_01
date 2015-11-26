@@ -198,7 +198,8 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                 
                 int maxVal = 0;
         
-                for (int t = 0; t <= 2 * maxDimension; t++) {
+                for (int t = 0; t <= 2 * maxDimension; t++) { 
+                // Optimialisatie wellicht met 
                     
                     double td = 1 * t;
                     
@@ -230,7 +231,8 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                     pixelCoord[2] = uVec[2] * (i - imageCenter) + vVec[2] * (j - imageCenter)
                             + volumeCenter[2] + td * viewVec[2];
                     
-                    if (pixelCoord[0] < volume.getDimX() || pixelCoord[1] < volume.getDimY() || pixelCoord[2] < volume.getDimZ()) {
+                    // Optimization by checking upfront if pixel coordinates are negative and break the loop
+                    if (pixelCoord[0] < 0 || pixelCoord[1] < 0 || pixelCoord[2] < 0) {
                         break;
                     }
 
@@ -284,6 +286,11 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         double[] volumeCenter = new double[3];
         VectorMath.setVector(volumeCenter, volume.getDimX() / 2, volume.getDimY() / 2, volume.getDimZ() / 2);
         
+        int[] volumeDimensions = new int[] {volume.getDimX(), volume.getDimY(), volume.getDimZ()};
+        int maxDimension = getMax(volumeDimensions);
+        
+        double threshold = 0.0;
+        
         // sample on a plane through the origin of the volume data
         double max = volume.getMaximum();
         TFColor voxelColor = new TFColor();
@@ -294,7 +301,8 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                 TFColor prevColor = new TFColor(0,0,0,1);
                 TFColor nextColor = new TFColor(0,0,0,1); 
                 
-                for (int t = -2; t <= 2; t++) {
+                for (double t = - 0.5 * maxDimension; t <= 0.5 * maxDimension; t+=5) {
+                // Optimization possible by step size
                     
                     pixelCoord[0] = uVec[0] * (i - imageCenter) + vVec[0] * (j - imageCenter)
                             + volumeCenter[0] + t * viewVec[0];
@@ -303,14 +311,17 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                     pixelCoord[2] = uVec[2] * (i - imageCenter) + vVec[2] * (j - imageCenter)
                             + volumeCenter[2] + t * viewVec[2];
 
-                    int val = getVoxel(pixelCoord);   
-                    voxelColor = tFunc.getColor(val);
-                    
-                    nextColor.r = voxelColor.a * voxelColor.r + (1 - voxelColor.a) * prevColor.r;
-                    nextColor.g = voxelColor.a * voxelColor.g + (1 - voxelColor.a) * prevColor.g;
-                    nextColor.b = voxelColor.a * voxelColor.b + (1 - voxelColor.a) * prevColor.b;
-                    
-                    prevColor = nextColor;
+                    int val = getVoxel(pixelCoord);
+                    if ( ( (pixelCoord[0] < volume.getDimX() && pixelCoord[0] >= 0) || (pixelCoord[1] < volume.getDimY() && pixelCoord[1] >= 0) || (pixelCoord[2] < volume.getDimZ() && pixelCoord[2] >= 0) ) && val > threshold) {
+                        //System.out.println(val);
+                        voxelColor = tFunc.getColor(val);
+
+                        nextColor.r = voxelColor.a * voxelColor.r + (1 - voxelColor.a) * prevColor.r;
+                        nextColor.g = voxelColor.a * voxelColor.g + (1 - voxelColor.a) * prevColor.g;
+                        nextColor.b = voxelColor.a * voxelColor.b + (1 - voxelColor.a) * prevColor.b;
+
+                        prevColor = nextColor;
+                    }
                 }
                 
                 // BufferedImage expects a pixel color packed as ARGB in an int
@@ -323,6 +334,36 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                 image.setRGB(i, j, pixelColor);
             }
         } 
+    }
+    
+    public static double linearInt(double x, double x1, double x2, double v0, double v1) {
+        
+        double v = ((x2 - x) / (x2 - x1)) * v0 + ((x - x1) / (x2 - x1)) * v1;
+        
+        return v;
+    }
+
+    public static double triLinearInt(double x, double y, double z, double q000, double q001, double q010, double q011, double q100, double q101, double q110, double q111, double x1, double x2, double y1, double y2, double z1, double z2) {
+      double x00 = linearInt(x, x1, x2, q000, q100);
+      double x10 = linearInt(x, x1, x2, q010, q110);
+      double x01 = linearInt(x, x1, x2, q001, q101);
+      double x11 = linearInt(x, x1, x2, q011, q111);
+      double r0 = linearInt(y, y1, y2, x00, x01);
+      double r1 = linearInt(y, y1, y2, x10, x11);
+
+      return linearInt(z, z1, z2, r0, r1);
+    }
+    
+    short triLinearInterpolation (double[] pixelCoord) {
+        
+        short val = 0;
+        short[] s = new short[7];
+        
+        
+        
+        val = triLinearInt(pixelCoord[0], pixelCoord[1], pixelCoord[2]);
+        
+        return val;
     }
 
     private void drawBoundingBox(GL2 gl) {
