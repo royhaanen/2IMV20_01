@@ -190,12 +190,15 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         double max = volume.getMaximum();
         TFColor voxelColor = new TFColor();
         
+        int[] volumeDimensions = new int[] {volume.getDimX(), volume.getDimY(), volume.getDimZ()};
+        int maxDimension = getMax(volumeDimensions);
+        
         for (int j = 0; j < image.getHeight(); j++) {
             for (int i = 0; i < image.getWidth(); i++) {
                 
                 int maxVal = 0;
         
-                for (int t = -90; t <= 90; t++) {
+                for (int t = 0; t <= 2 * maxDimension; t++) {
                     
                     double td = 1 * t;
                     
@@ -205,8 +208,32 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                             + volumeCenter[1] + td * viewVec[1];
                     pixelCoord[2] = uVec[2] * (i - imageCenter) + vVec[2] * (j - imageCenter)
                             + volumeCenter[2] + td * viewVec[2];
-
                     
+                    if (pixelCoord[0] > volume.getDimX() || pixelCoord[1] > volume.getDimY() || pixelCoord[2] > volume.getDimZ()) {
+                        break;
+                    }
+
+                    int val = getVoxel(pixelCoord);
+                    
+                    if (val > maxVal) 
+                        maxVal = val;
+                }
+                
+                for (int t = 0; t >= - 2 * maxDimension; t--) {
+                    
+                    double td = 1 * t;
+                    
+                    pixelCoord[0] = uVec[0] * (i - imageCenter) + vVec[0] * (j - imageCenter)
+                            + volumeCenter[0] + td * viewVec[0];
+                    pixelCoord[1] = uVec[1] * (i - imageCenter) + vVec[1] * (j - imageCenter)
+                            + volumeCenter[1] + td * viewVec[1];
+                    pixelCoord[2] = uVec[2] * (i - imageCenter) + vVec[2] * (j - imageCenter)
+                            + volumeCenter[2] + td * viewVec[2];
+                    
+                    if (pixelCoord[0] < volume.getDimX() || pixelCoord[1] < volume.getDimY() || pixelCoord[2] < volume.getDimZ()) {
+                        break;
+                    }
+
                     int val = getVoxel(pixelCoord);
                     
                     if (val > maxVal) 
@@ -265,40 +292,32 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
             for (int i = 0; i < image.getWidth(); i++) {
                 
                 TFColor prevColor = new TFColor(0,0,0,1);
+                TFColor nextColor = new TFColor(0,0,0,1); 
                 
-                for (int t = -90; t <= 90; t++) {
-                    
-                    double td = 1 * t;
+                for (int t = -2; t <= 2; t++) {
                     
                     pixelCoord[0] = uVec[0] * (i - imageCenter) + vVec[0] * (j - imageCenter)
-                            + volumeCenter[0] + td * viewVec[0];
+                            + volumeCenter[0] + t * viewVec[0];
                     pixelCoord[1] = uVec[1] * (i - imageCenter) + vVec[1] * (j - imageCenter)
-                            + volumeCenter[1] + td * viewVec[1];
+                            + volumeCenter[1] + t * viewVec[1];
                     pixelCoord[2] = uVec[2] * (i - imageCenter) + vVec[2] * (j - imageCenter)
-                            + volumeCenter[2] + td * viewVec[2];
+                            + volumeCenter[2] + t * viewVec[2];
 
                     int val = getVoxel(pixelCoord);   
                     voxelColor = tFunc.getColor(val);
                     
-                    System.out.println("r " + voxelColor.r);
-                
-                    //voxelColor.r = val/max;
-                    //voxelColor.g = voxelColor.r;
-                    //voxelColor.b = voxelColor.r;
-                    //voxelColor.a = val > 0 ? 1.0 : 0.0;  // this makes intensity 0 completely transparent and the rest opaque
+                    nextColor.r = voxelColor.a * voxelColor.r + (1 - voxelColor.a) * prevColor.r;
+                    nextColor.g = voxelColor.a * voxelColor.g + (1 - voxelColor.a) * prevColor.g;
+                    nextColor.b = voxelColor.a * voxelColor.b + (1 - voxelColor.a) * prevColor.b;
                     
-                    voxelColor.r = voxelColor.a * voxelColor.r + (1 - voxelColor.a) * prevColor.r;
-                    voxelColor.g = voxelColor.a * voxelColor.g + (1 - voxelColor.a) * prevColor.g;
-                    voxelColor.b = voxelColor.a * voxelColor.b + (1 - voxelColor.a) * prevColor.b;
-                    
-                    prevColor = voxelColor;
+                    prevColor = nextColor;
                 }
                 
                 // BufferedImage expects a pixel color packed as ARGB in an int
-                int c_alpha = voxelColor.a <= 1.0 ? (int) Math.floor(voxelColor.a * 255) : 255;
-                int c_red = voxelColor.r <= 1.0 ? (int) Math.floor(voxelColor.r * 255) : 255;
-                int c_green = voxelColor.g <= 1.0 ? (int) Math.floor(voxelColor.g * 255) : 255;
-                int c_blue = voxelColor.b <= 1.0 ? (int) Math.floor(voxelColor.b * 255) : 255;
+                int c_alpha = nextColor.a <= 1.0 ? (int) Math.floor(nextColor.a * 255) : 255;
+                int c_red = nextColor.r <= 1.0 ? (int) Math.floor(nextColor.r * 255) : 255;
+                int c_green = nextColor.g <= 1.0 ? (int) Math.floor(nextColor.g * 255) : 255;
+                int c_blue = nextColor.b <= 1.0 ? (int) Math.floor(nextColor.b * 255) : 255;
                     
                 int pixelColor = (c_alpha << 24) | (c_red << 16) | (c_green << 8) | c_blue;
                 image.setRGB(i, j, pixelColor);
@@ -364,6 +383,22 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         gl.glPopAttrib();
 
     }
+    
+    // Method for getting the maximum value
+    public static int getMax(int[] inputArray){ 
+    
+        int maxValue = inputArray[0]; 
+        
+        for(int i=1;i < inputArray.length;i++){ 
+         
+            if(inputArray[i] > maxValue){ 
+            
+                maxValue = inputArray[i]; 
+            } 
+        } 
+    
+        return maxValue; 
+  }
 
     @Override
     public void visualize(GL2 gl) {
