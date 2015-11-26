@@ -279,10 +279,19 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
 
                     int val = getVoxel(pixelCoord);   
                     voxelColor = tFunc.getColor(val);
-
-                    voxelColor.r = (1 - voxelColor.a) * voxelColor.r + voxelColor.a * prevColor.r;
-                    voxelColor.g = (1 - voxelColor.a) * voxelColor.g + voxelColor.a * prevColor.g;
-                    voxelColor.b = (1 - voxelColor.a) * voxelColor.b + voxelColor.a * prevColor.b;
+                    
+                    System.out.println("r " + voxelColor.r);
+                
+                    //voxelColor.r = val/max;
+                    //voxelColor.g = voxelColor.r;
+                    //voxelColor.b = voxelColor.r;
+                    //voxelColor.a = val > 0 ? 1.0 : 0.0;  // this makes intensity 0 completely transparent and the rest opaque
+                    
+                    voxelColor.r = voxelColor.a * voxelColor.r + (1 - voxelColor.a) * prevColor.r;
+                    voxelColor.g = voxelColor.a * voxelColor.g + (1 - voxelColor.a) * prevColor.g;
+                    voxelColor.b = voxelColor.a * voxelColor.b + (1 - voxelColor.a) * prevColor.b;
+                    
+                    prevColor = voxelColor;
                 }
                 
                 // BufferedImage expects a pixel color packed as ARGB in an int
