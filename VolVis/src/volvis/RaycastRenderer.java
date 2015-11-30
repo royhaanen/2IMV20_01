@@ -301,7 +301,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                 TFColor prevColor = new TFColor(0,0,0,1);
                 TFColor nextColor = new TFColor(0,0,0,1); 
                 
-                for (double t = - 0.5 * maxDimension; t <= 0.5 * maxDimension; t+=3.6) {
+                for (double t = - 0.5 * maxDimension; t <= 0.5 * maxDimension; t+=4.9) {
                 // Optimization possible by step size
                     
                     pixelCoord[0] = uVec[0] * (i - imageCenter) + vVec[0] * (j - imageCenter)
@@ -371,17 +371,15 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         double z = pixelCoord[2];
         
         double q000[] = {Math.floor(x), Math.floor(y), Math.floor(z)};
-        double q100[] = {Math.ceil(x), Math.floor(y), Math.floor(z)};
-        double q010[] = {Math.floor(x), Math.ceil(y), Math.floor(z)};
-        double q110[] = {Math.ceil(x), Math.ceil(y), Math.floor(z)};
-        double q001[] = {Math.floor(x), Math.floor(y), Math.ceil(z)};
-        double q101[] = {Math.ceil(x), Math.floor(y), Math.ceil(z)};
-        double q011[] = {Math.floor(x), Math.ceil(y), Math.ceil(z)};
-        double q111[] = {Math.ceil(x), Math.ceil(y), Math.ceil(z)};
+        double q100[] = {Math.floor(x)+1.0, Math.floor(y), Math.floor(z)};
+        double q010[] = {Math.floor(x), Math.floor(y)+1.0, Math.floor(z)};
+        double q110[] = {Math.floor(x)+1.0, Math.floor(y)+1.0, Math.floor(z)};
+        double q001[] = {Math.floor(x), Math.floor(y), Math.floor(z)+1.0};
+        double q101[] = {Math.floor(x)+1.0, Math.floor(y), Math.floor(z)+1.0};
+        double q011[] = {Math.floor(x), Math.floor(y)+1.0, Math.floor(z)+1.0};
+        double q111[] = {Math.floor(x)+1.0, Math.floor(y)+1.0, Math.floor(z)+1.0};
         
-        System.out.println("q000:" + q000 + " val: " + (double)getVoxel(q000));
-        
-        val = triLinearInt(x, y, z, (double)getVoxel(q000), (double)getVoxel(q001), (double)getVoxel(q010), (double)getVoxel(q011), (double)getVoxel(q100), (double)getVoxel(q101), (double)getVoxel(q110), (double)getVoxel(q111), Math.floor(x), Math.ceil(x), Math.floor(y), Math.ceil(y), Math.floor(z), Math.ceil(z));
+        val = triLinearInt(x, y, z, (double)getVoxel(q000), (double)getVoxel(q001), (double)getVoxel(q010), (double)getVoxel(q011), (double)getVoxel(q100), (double)getVoxel(q101), (double)getVoxel(q110), (double)getVoxel(q111), Math.floor(x), Math.floor(x)+1.0, Math.floor(y), Math.floor(y)+1.0, Math.floor(z), Math.floor(z)+1.0);
         
         return val;
     }
