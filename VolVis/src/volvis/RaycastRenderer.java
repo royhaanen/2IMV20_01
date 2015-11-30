@@ -301,7 +301,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                 TFColor prevColor = new TFColor(0,0,0,1);
                 TFColor nextColor = new TFColor(0,0,0,1); 
                 
-                for (double t = - 0.5 * maxDimension; t <= 0.5 * maxDimension; t+=5) {
+                for (double t = - 0.5 * maxDimension; t <= 0.5 * maxDimension; t+=3.6) {
                 // Optimization possible by step size
                     
                     pixelCoord[0] = uVec[0] * (i - imageCenter) + vVec[0] * (j - imageCenter)
@@ -311,7 +311,12 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                     pixelCoord[2] = uVec[2] * (i - imageCenter) + vVec[2] * (j - imageCenter)
                             + volumeCenter[2] + t * viewVec[2];
 
-                    int val = getVoxel(pixelCoord);
+                    // Use the line below for non-interpolated values
+                    //int val = getVoxel(pixelCoord);
+                    
+                    // Use the line below for tri-linear interpolated values
+                    int val = triLinearInterpolation(pixelCoord);
+                    
                     if ( ( (pixelCoord[0] < volume.getDimX() && pixelCoord[0] >= 0) || (pixelCoord[1] < volume.getDimY() && pixelCoord[1] >= 0) || (pixelCoord[2] < volume.getDimZ() && pixelCoord[2] >= 0) ) && val > threshold) {
                         //System.out.println(val);
                         voxelColor = tFunc.getColor(val);
@@ -336,14 +341,17 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         } 
     }
     
-    public static double linearInt(double x, double x1, double x2, double v0, double v1) {
+    public static double linearInt(double x, double x0, double x1, double v0, double v1) {
         
-        double v = ((x2 - x) / (x2 - x1)) * v0 + ((x - x1) / (x2 - x1)) * v1;
+        double v = ((x1 - x) / (x1 - x0)) * v0 + ((x - x0) / (x1 - x0)) * v1;
         
         return v;
     }
 
-    public static double triLinearInt(double x, double y, double z, double q000, double q001, double q010, double q011, double q100, double q101, double q110, double q111, double x1, double x2, double y1, double y2, double z1, double z2) {
+    public static short triLinearInt(double x, double y, double z, double q000, double q001, double q010, double q011, double q100, double q101, double q110, double q111, double x1, double x2, double y1, double y2, double z1, double z2) {
+      // x =  pixelCoord[0], y = pixelCoord[1], z = pixelCoord[2] 
+      // q000 = value of (floor(x), floor(y), floor(z))...
+        
       double x00 = linearInt(x, x1, x2, q000, q100);
       double x10 = linearInt(x, x1, x2, q010, q110);
       double x01 = linearInt(x, x1, x2, q001, q101);
@@ -351,17 +359,29 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
       double r0 = linearInt(y, y1, y2, x00, x01);
       double r1 = linearInt(y, y1, y2, x10, x11);
 
-      return linearInt(z, z1, z2, r0, r1);
+      return (short)Math.round(linearInt(z, z1, z2, r0, r1));
     }
     
-    short triLinearInterpolation (double[] pixelCoord) {
+    public short triLinearInterpolation (double[] pixelCoord) {
         
         short val = 0;
-        short[] s = new short[7];
         
+        double x = pixelCoord[0];
+        double y = pixelCoord[1];
+        double z = pixelCoord[2];
         
+        double q000[] = {Math.floor(x), Math.floor(y), Math.floor(z)};
+        double q100[] = {Math.ceil(x), Math.floor(y), Math.floor(z)};
+        double q010[] = {Math.floor(x), Math.ceil(y), Math.floor(z)};
+        double q110[] = {Math.ceil(x), Math.ceil(y), Math.floor(z)};
+        double q001[] = {Math.floor(x), Math.floor(y), Math.ceil(z)};
+        double q101[] = {Math.ceil(x), Math.floor(y), Math.ceil(z)};
+        double q011[] = {Math.floor(x), Math.ceil(y), Math.ceil(z)};
+        double q111[] = {Math.ceil(x), Math.ceil(y), Math.ceil(z)};
         
-        val = triLinearInt(pixelCoord[0], pixelCoord[1], pixelCoord[2]);
+        System.out.println("q000:" + q000 + " val: " + (double)getVoxel(q000));
+        
+        val = triLinearInt(x, y, z, (double)getVoxel(q000), (double)getVoxel(q001), (double)getVoxel(q010), (double)getVoxel(q011), (double)getVoxel(q100), (double)getVoxel(q101), (double)getVoxel(q110), (double)getVoxel(q111), Math.floor(x), Math.ceil(x), Math.floor(y), Math.ceil(y), Math.floor(z), Math.ceil(z));
         
         return val;
     }
