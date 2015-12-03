@@ -82,7 +82,8 @@ public class TransferFunction2DEditor extends javax.swing.JPanel {
             histogram[yPos * xbins + voxelVal] += 1;
         }
     }
-
+    
+    
     public void setSelectedInfo() {
         intensityLabel.setText(Integer.toString(triangleWidget.baseIntensity));
         radiusLabel.setText(String.format("%.3f", triangleWidget.radius));

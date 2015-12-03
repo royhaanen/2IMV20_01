@@ -298,8 +298,8 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         for (int j = 0; j < image.getHeight(); j++) {
             for (int i = 0; i < image.getWidth(); i++) {
                 
-                TFColor prevColor = new TFColor(0,0,0,1);
-                TFColor nextColor = new TFColor(0,0,0,1); 
+                TFColor prevColor = new TFColor(0,0,0,0);
+                TFColor nextColor = new TFColor(0,0,0,0); 
                 
                 for (double t = - 0.5 * maxDimension; t <= 0.5 * maxDimension; t+=4.9) {
                 // Optimization possible by step size
@@ -312,18 +312,22 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                             + volumeCenter[2] + t * viewVec[2];
 
                     // Use the line below for non-interpolated values
-                    //int val = getVoxel(pixelCoord);
+                    int val = getVoxel(pixelCoord);
                     
                     // Use the line below for tri-linear interpolated values
-                    int val = triLinearInterpolation(pixelCoord);
+                    //int val = triLinearInterpolation(pixelCoord);
                     
                     if ( ( (pixelCoord[0] < volume.getDimX() && pixelCoord[0] >= 0) || (pixelCoord[1] < volume.getDimY() && pixelCoord[1] >= 0) || (pixelCoord[2] < volume.getDimZ() && pixelCoord[2] >= 0) ) && val > threshold) {
-                        //System.out.println(val);
+                        
                         voxelColor = tFunc.getColor(val);
 
                         nextColor.r = voxelColor.a * voxelColor.r + (1 - voxelColor.a) * prevColor.r;
                         nextColor.g = voxelColor.a * voxelColor.g + (1 - voxelColor.a) * prevColor.g;
                         nextColor.b = voxelColor.a * voxelColor.b + (1 - voxelColor.a) * prevColor.b;
+                        nextColor.a += voxelColor.a;
+                        //
+                        //  Laatste regel hierboven aangepast! Even uitleggen
+                        //
 
                         prevColor = nextColor;
                     }
@@ -375,11 +379,16 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         double max = volume.getMaximum();
         TFColor voxelColor = new TFColor();
         
+        // Get the GUI user defined variables
+        int definedIntensity = tfEditor2D.triangleWidget.baseIntensity;
+        double definedRadius = tfEditor2D.triangleWidget.radius;
+        TFColor definedColor = tfEditor2D.triangleWidget.color;
+        
         for (int j = 0; j < image.getHeight(); j++) {
             for (int i = 0; i < image.getWidth(); i++) {
                 
-                TFColor prevColor = new TFColor(0,0,0,1);
-                TFColor nextColor = new TFColor(0,0,0,1); 
+                TFColor prevColor = new TFColor(0,0,0,0);
+                TFColor nextColor = new TFColor(0,0,0,0); 
                 
                 for (double t = - 0.5 * maxDimension; t <= 0.5 * maxDimension; t+=4.9) {
                 // Optimization possible by step size
@@ -398,12 +407,13 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                     //int val = triLinearInterpolation(pixelCoord);
                     
                     if ( ( (pixelCoord[0] < volume.getDimX() && pixelCoord[0] >= 0) || (pixelCoord[1] < volume.getDimY() && pixelCoord[1] >= 0) || (pixelCoord[2] < volume.getDimZ() && pixelCoord[2] >= 0) ) && val > threshold) {
-                        //System.out.println(val);
+                        
                         voxelColor = tFunc.getColor(val);
 
                         nextColor.r = voxelColor.a * voxelColor.r + (1 - voxelColor.a) * prevColor.r;
                         nextColor.g = voxelColor.a * voxelColor.g + (1 - voxelColor.a) * prevColor.g;
                         nextColor.b = voxelColor.a * voxelColor.b + (1 - voxelColor.a) * prevColor.b;
+                        nextColor.a += voxelColor.a;
 
                         prevColor = nextColor;
                     }
@@ -411,9 +421,15 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                 
                 // BufferedImage expects a pixel color packed as ARGB in an int
                 int c_alpha = nextColor.a <= 1.0 ? (int) Math.floor(nextColor.a * 255) : 255;
-                int c_red = nextColor.r <= 1.0 ? (int) Math.floor(nextColor.r * 255) : 255;
-                int c_green = nextColor.g <= 1.0 ? (int) Math.floor(nextColor.g * 255) : 255;
-                int c_blue = nextColor.b <= 1.0 ? (int) Math.floor(nextColor.b * 255) : 255;
+                int c_red = definedColor.r <= 1.0 ? (int) Math.floor(definedColor.r * 255) : 255;
+                int c_green = definedColor.g <= 1.0 ? (int) Math.floor(definedColor.g * 255) : 255;
+                int c_blue = definedColor.b <= 1.0 ? (int) Math.floor(definedColor.b * 255) : 255;
+                
+                // ORIGINAL VALUES BELOW
+                //int c_alpha = nextColor.a <= 1.0 ? (int) Math.floor(nextColor.a * 255) : 255;
+                //int c_red = nextColor.r <= 1.0 ? (int) Math.floor(nextColor.r * 255) : 255;
+                //int c_green = nextColor.g <= 1.0 ? (int) Math.floor(nextColor.g * 255) : 255;
+                //int c_blue = nextColor.b <= 1.0 ? (int) Math.floor(nextColor.b * 255) : 255;
                     
                 int pixelColor = (c_alpha << 24) | (c_red << 16) | (c_green << 8) | c_blue;
                 image.setRGB(i, j, pixelColor);
