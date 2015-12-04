@@ -409,13 +409,28 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                     if ( ( (pixelCoord[0] < volume.getDimX() && pixelCoord[0] >= 0) || (pixelCoord[1] < volume.getDimY() && pixelCoord[1] >= 0) || (pixelCoord[2] < volume.getDimZ() && pixelCoord[2] >= 0) ) && val > threshold) {
                         
                         voxelColor = tFunc.getColor(val);
+                        VoxelGradient voxGrad = gradients.getGradient((int)pixelCoord[0], (int)pixelCoord[1], (int)pixelCoord[2]); // Is this right? Should it be a coordinate?
+                        
+                        //if ((val - definedRadius * voxGrad.mag) <= definedIntensity)
+                          //  System.out.println("left: " + (val - definedRadius * voxGrad.mag) + " right: " + definedIntensity);
+                
+                        
+                        if (val == definedIntensity && voxGrad.mag == 0) {
+                            nextColor.a = 1;
+                        }
+                        else if (voxGrad.mag > 0 && ( ((val - definedRadius * voxGrad.mag) <= definedIntensity) && ((val + definedRadius * voxGrad.mag) >= definedIntensity) ) ) {
+                            nextColor.a = 1 - (1 / definedRadius) * ((definedIntensity - val)/ voxGrad.mag);
+                        }
+                        else 
+                            nextColor.a = 0;
 
                         nextColor.r = voxelColor.a * voxelColor.r + (1 - voxelColor.a) * prevColor.r;
                         nextColor.g = voxelColor.a * voxelColor.g + (1 - voxelColor.a) * prevColor.g;
                         nextColor.b = voxelColor.a * voxelColor.b + (1 - voxelColor.a) * prevColor.b;
-                        nextColor.a += voxelColor.a;
+                        //nextColor.a += voxelColor.a;
 
                         prevColor = nextColor;
+                        
                     }
                 }
                 
