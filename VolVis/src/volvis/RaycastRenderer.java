@@ -324,17 +324,15 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                         nextColor.r = voxelColor.a * voxelColor.r + (1 - voxelColor.a) * prevColor.r;
                         nextColor.g = voxelColor.a * voxelColor.g + (1 - voxelColor.a) * prevColor.g;
                         nextColor.b = voxelColor.a * voxelColor.b + (1 - voxelColor.a) * prevColor.b;
-                        nextColor.a += voxelColor.a;
-                        //
-                        //  Laatste regel hierboven aangepast! Even uitleggen
-                        //
-
+                        
+                        nextColor.a = (1 - voxelColor.a) * nextColor.a;
+                        
                         prevColor = nextColor;
                     }
                 }
                 
                 // BufferedImage expects a pixel color packed as ARGB in an int
-                int c_alpha = nextColor.a <= 1.0 ? (int) Math.floor(nextColor.a * 255) : 255;
+                int c_alpha = (1 - nextColor.a) <= 1.0 ? (int) Math.floor((1 - nextColor.a) * 255) : 255;
                 int c_red = nextColor.r <= 1.0 ? (int) Math.floor(nextColor.r * 255) : 255;
                 int c_green = nextColor.g <= 1.0 ? (int) Math.floor(nextColor.g * 255) : 255;
                 int c_blue = nextColor.b <= 1.0 ? (int) Math.floor(nextColor.b * 255) : 255;
@@ -408,38 +406,37 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                     
                     if ( ( (pixelCoord[0] < volume.getDimX() && pixelCoord[0] >= 0) || (pixelCoord[1] < volume.getDimY() && pixelCoord[1] >= 0) || (pixelCoord[2] < volume.getDimZ() && pixelCoord[2] >= 0) ) && val > threshold) {
                         
-                        //voxelColor = tFunc.getColor(val);
                         voxelColor = definedColor;
-                        VoxelGradient voxGrad = gradients.getGradient((int)pixelCoord[0], (int)pixelCoord[1], (int)pixelCoord[2]); // Is this right? Should it be a coordinate?
-                        
-                        //if ((val - definedRadius * voxGrad.mag) <= definedIntensity)
-                          //  System.out.println("left: " + (val - definedRadius * voxGrad.mag) + " right: " + definedIntensity);
-                
+                        VoxelGradient voxGrad = gradients.getGradient((int)Math.floor(pixelCoord[0]), (int)Math.floor(pixelCoord[1]), (int)Math.floor(pixelCoord[2])); 
                         
                         if (val == definedIntensity && voxGrad.mag == 0) {
-                            nextColor.a = 1;
+                            nextColor.a = 1.0;
                         }
-                        else if (voxGrad.mag > 0 && ( ((val - definedRadius * voxGrad.mag) <= definedIntensity) && ((val + definedRadius * voxGrad.mag) >= definedIntensity) ) ) {
-                            nextColor.a = 1 - (1 / definedRadius) * (Math.abs(definedIntensity - val)/ voxGrad.mag);
+                        else if (voxGrad.mag > 0.0 && ((val - definedRadius * voxGrad.mag) <= definedIntensity) && ((val + definedRadius * voxGrad.mag) >= definedIntensity) )  {
+                            nextColor.a = 1.0 - (1 / definedRadius) * (Math.abs((definedIntensity - val)/ voxGrad.mag));
                         }
                         else 
-                            nextColor.a = 0;
+                            nextColor.a = 0.0;
                         
                         nextColor.r = voxelColor.a * voxelColor.r + (1 - voxelColor.a) * prevColor.r;
                         nextColor.g = voxelColor.a * voxelColor.g + (1 - voxelColor.a) * prevColor.g;
                         nextColor.b = voxelColor.a * voxelColor.b + (1 - voxelColor.a) * prevColor.b;
-                        nextColor.a += voxelColor.a;
+                        
+                        nextColor.a = (1 - voxelColor.a) * nextColor.a;
 
                         prevColor = nextColor;
                         
                     }
+                    
                 }
-                
+                //if (nextColor.a > 0.0)
+                  //  System.out.println("alpha: " + nextColor.a);
+                        
                 // BufferedImage expects a pixel color packed as ARGB in an int
-                int c_alpha = nextColor.a <= 1.0 ? (int) Math.floor(nextColor.a * 255) : 255;
-                int c_red = nextColor.r <= 1.0 ? (int) Math.floor(nextColor.r * 255) : 255;
-                int c_green = nextColor.g <= 1.0 ? (int) Math.floor(nextColor.g * 255) : 255;
-                int c_blue = nextColor.b <= 1.0 ? (int) Math.floor(nextColor.b * 255) : 255;
+                int c_alpha = (1 - nextColor.a) <= 1.0 ? (int) Math.floor((1 - nextColor.a) * 255) : 255;
+                int c_red = definedColor.r <= 1.0 ? (int) Math.floor(definedColor.r * 255) : 255;
+                int c_green = definedColor.g <= 1.0 ? (int) Math.floor(definedColor.g * 255) : 255;
+                int c_blue = definedColor.b <= 1.0 ? (int) Math.floor(definedColor.b * 255) : 255;
                 
                 // ORIGINAL VALUES BELOW
                 //int c_alpha = nextColor.a <= 1.0 ? (int) Math.floor(nextColor.a * 255) : 255;
