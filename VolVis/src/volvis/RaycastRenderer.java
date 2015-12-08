@@ -408,14 +408,13 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                     
                     if ( ( (pixelCoord[0] < volume.getDimX() && pixelCoord[0] >= 0) || (pixelCoord[1] < volume.getDimY() && pixelCoord[1] >= 0) || (pixelCoord[2] < volume.getDimZ() && pixelCoord[2] >= 0) ) && val > threshold) {
                         
-                        voxelColor = definedColor;
                         VoxelGradient voxGrad = gradients.getGradient((int)Math.floor(pixelCoord[0]), (int)Math.floor(pixelCoord[1]), (int)Math.floor(pixelCoord[2])); 
                         
                         if (val == definedIntensity && voxGrad.mag == 0) {
-                            voxelColor.a = 1.0;
+                            voxelColor.a = definedColor.a * 1.0;
                         }
                         else if (voxGrad.mag > 0.0 && ((val - definedRadius * voxGrad.mag) <= definedIntensity) && ((val + definedRadius * voxGrad.mag) >= definedIntensity) )  {
-                            voxelColor.a = 1.0 - (1 / definedRadius) * (Math.abs((definedIntensity - val)/ voxGrad.mag));
+                            voxelColor.a = definedColor.a * (1.0 - (1 / definedRadius) * (Math.abs((definedIntensity - val)/ voxGrad.mag)));
                         }
                         else 
                             voxelColor.a = 0.0;
@@ -491,7 +490,6 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         // sample on a plane through the origin of the volume data
         double max = volume.getMaximum();
         TFColor voxelColor = new TFColor();
-        TFColor tempColor = new TFColor();
         
         // Get the GUI user defined variables
         int definedIntensity = tfEditor2D.triangleWidget.baseIntensity;
@@ -504,7 +502,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                 TFColor prevColor = new TFColor();
                 TFColor nextColor = new TFColor(); 
                 
-                for (double t = - 0.5 * maxDimension; t <= 0.5 * maxDimension; t+=5) {
+                for (double t = - 0.5 * maxDimension; t <= 0.5 * maxDimension; t+=.5) {
                 // Optimization possible by step size
                     
                     pixelCoord[0] = uVec[0] * (i - imageCenter) + vVec[0] * (j - imageCenter)
@@ -522,19 +520,18 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                     
                     if ( ( (pixelCoord[0] < volume.getDimX() && pixelCoord[0] >= 0) || (pixelCoord[1] < volume.getDimY() && pixelCoord[1] >= 0) || (pixelCoord[2] < volume.getDimZ() && pixelCoord[2] >= 0) ) && val > threshold) {
                         
-                        voxelColor = definedColor;
                         VoxelGradient voxGrad = gradients.getGradient((int)Math.floor(pixelCoord[0]), (int)Math.floor(pixelCoord[1]), (int)Math.floor(pixelCoord[2])); 
                         
                         if (val == definedIntensity && voxGrad.mag == 0) {
-                            voxelColor.a = 1.0;
+                            voxelColor.a = definedColor.a * 1.0;
                         }
                         else if (voxGrad.mag > 0.0 && ((val - definedRadius * voxGrad.mag) <= definedIntensity) && ((val + definedRadius * voxGrad.mag) >= definedIntensity) )  {
-                            voxelColor.a = 1.0 - (1 / definedRadius) * (Math.abs((definedIntensity - val)/ voxGrad.mag));
+                            voxelColor.a = definedColor.a * (1.0 - (1 / definedRadius) * (Math.abs((definedIntensity - val)/ voxGrad.mag)));
                         }
                         else 
                             voxelColor.a = 0.0;
                         
-                        if (voxGrad.mag > 0.0) {
+                        if (voxGrad.mag > 0.0 && voxelColor.a > 0.0) {
                             // Filling N-Vector:
                             nVec[0] = voxGrad.x / voxGrad.mag;
                             nVec[1] = voxGrad.y / voxGrad.mag;
@@ -545,17 +542,17 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                             double n_dot_h = VectorMath.dotproduct(nVec, hVec);
                             
                             if (l_dot_n > 0 && n_dot_h > 0 ) {
-                                tempColor.r = i_a + (definedColor.r * k_diff * l_dot_n) + k_spec * Math.pow(n_dot_h, alpha);
-                                tempColor.g = i_a + (definedColor.g * k_diff * l_dot_n) + k_spec * Math.pow(n_dot_h, alpha);
-                                tempColor.b = i_a + (definedColor.b * k_diff * l_dot_n) + k_spec * Math.pow(n_dot_h, alpha);
+                                voxelColor.r = i_a + (definedColor.r * k_diff * l_dot_n) + k_spec * Math.pow(n_dot_h, alpha);
+                                voxelColor.g = i_a + (definedColor.g * k_diff * l_dot_n) + k_spec * Math.pow(n_dot_h, alpha);
+                                voxelColor.b = i_a + (definedColor.b * k_diff * l_dot_n) + k_spec * Math.pow(n_dot_h, alpha);
                             }
                                 
                         }
                         
                         
-                        nextColor.r = voxelColor.a * tempColor.r + (1 - voxelColor.a) * prevColor.r;
-                        nextColor.g = voxelColor.a * tempColor.g + (1 - voxelColor.a) * prevColor.g;
-                        nextColor.b = voxelColor.a * tempColor.b + (1 - voxelColor.a) * prevColor.b;
+                        nextColor.r = voxelColor.a * voxelColor.r + (1 - voxelColor.a) * prevColor.r;
+                        nextColor.g = voxelColor.a * voxelColor.g + (1 - voxelColor.a) * prevColor.g;
+                        nextColor.b = voxelColor.a * voxelColor.b + (1 - voxelColor.a) * prevColor.b;
                         
                         nextColor.a = (1 - voxelColor.a) * prevColor.a;
                         
