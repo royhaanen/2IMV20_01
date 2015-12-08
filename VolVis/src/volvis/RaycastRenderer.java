@@ -33,7 +33,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
     
     private int rendererMode = 0;
     double stepSize = 3.0;
-    
+        
     public RaycastRenderer() {
         panel = new RaycastRendererPanel(this);
         panel.setSpeedLabel("0");
@@ -170,6 +170,8 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                 image.setRGB(i, j, 0);
             }
         }
+        
+        double stepSize = Double.parseDouble(panel.stepSize.getText());
 
         // vector uVec and vVec define a plane through the origin, 
         // perpendicular to the view vector viewVec
@@ -242,12 +244,12 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                 }
                 
                 // Map the intensity to a grey value by linear scaling
-                voxelColor.r = maxVal/max;
-                voxelColor.g = voxelColor.r;
-                voxelColor.b = voxelColor.r;
-                voxelColor.a = maxVal > 0 ? 1.0 : 0.0;  // this makes intensity 0 completely transparent and the rest opaque
-                // Alternatively, apply the transfer function to obtain a color
-                //voxelColor = tFunc.getColor(maxVal);
+//                voxelColor.r = maxVal/max;
+//                voxelColor.g = voxelColor.r;
+//                voxelColor.b = voxelColor.r;
+//                voxelColor.a = maxVal > 0 ? 1.0 : 0.0;  // this makes intensity 0 completely transparent and the rest opaque
+//                // Alternatively, apply the transfer function to obtain a color
+                voxelColor = tFunc.getColor(maxVal);
 
                 // BufferedImage expects a pixel color packed as ARGB in an int
                 int c_alpha = voxelColor.a <= 1.0 ? (int) Math.floor(voxelColor.a * 255) : 255;
@@ -268,6 +270,8 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                 image.setRGB(i, j, 0);
             }
         }
+        
+        double stepSize = Double.parseDouble(panel.stepSize.getText());
 
         // vector uVec and vVec define a plane through the origin, 
         // perpendicular to the view vector viewVec
@@ -353,6 +357,8 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
             }
         }
 
+        double stepSize = Double.parseDouble(panel.stepSize.getText());
+        
         // vector uVec and vVec define a plane through the origin, 
         // perpendicular to the view vector viewVec
         double[] viewVec = new double[3];

@@ -162,6 +162,7 @@ public class TransferFunction2DEditor extends javax.swing.JPanel {
         jLabel7.setText("Radius");
 
         opacityLabel.setText("jTextField2");
+        opacityLabel.setActionCommand("<Not Set>");
         opacityLabel.setMinimumSize(new java.awt.Dimension(84, 28));
         opacityLabel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
