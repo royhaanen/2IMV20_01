@@ -32,6 +32,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
     TransferFunction2DEditor tfEditor2D;
     
     private int rendererMode = 0;
+    double stepSize = 3.0;
     
     public RaycastRenderer() {
         panel = new RaycastRendererPanel(this);
@@ -198,10 +199,8 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                 
                 int maxVal = 0;
         
-                for (int t = 0; t <= 2 * maxDimension; t++) { 
+                for (double td = 0; td <= 2 * maxDimension; td+=stepSize) { 
                 // Optimialisatie wellicht met 
-                    
-                    double td = 1 * t;
                     
                     pixelCoord[0] = uVec[0] * (i - imageCenter) + vVec[0] * (j - imageCenter)
                             + volumeCenter[0] + td * viewVec[0];
@@ -301,7 +300,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                 TFColor prevColor = new TFColor();
                 TFColor nextColor = new TFColor(); 
                 
-                for (double t = - 0.5 * maxDimension; t <= 0.5 * maxDimension; t+=2.3) {
+                for (double t = - 0.5 * maxDimension; t <= 0.5 * maxDimension; t+=stepSize) {
                 // Optimization possible by step size
                     
                     pixelCoord[0] = uVec[0] * (i - imageCenter) + vVec[0] * (j - imageCenter)
@@ -403,7 +402,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                 TFColor prevColor = new TFColor();
                 TFColor nextColor = new TFColor(); 
                 
-                for (double t = - 0.5 * maxDimension; t <= 0.5 * maxDimension; t+=.5) {
+                for (double t = - 0.5 * maxDimension; t <= 0.5 * maxDimension; t+=stepSize) {
                 // Optimization possible by step size
                     
                     pixelCoord[0] = uVec[0] * (i - imageCenter) + vVec[0] * (j - imageCenter)
