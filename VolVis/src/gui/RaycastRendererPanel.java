@@ -165,6 +165,6 @@ public class RaycastRendererPanel extends javax.swing.JPanel {
     private javax.swing.JLabel renderingSpeedLabel;
     public javax.swing.JCheckBox shadingCheckbox;
     private javax.swing.JRadioButton slicerButton;
-    private javax.swing.JRadioButton tf2dButton;
+    public javax.swing.JRadioButton tf2dButton;
     // End of variables declaration//GEN-END:variables
 }

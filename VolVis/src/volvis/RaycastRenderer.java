@@ -615,15 +615,19 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         
         // rendererModes: 0 = slicer, 1 = mip, 2 = compositing, 3 = 2dtransfer
         switch (rendererMode) {
-            case 0:     slicer(viewMatrix);
+            case 0:     panel.shadingCheckbox.setSelected(false);
+                        slicer(viewMatrix);
                         break;
-            case 1:     mip(viewMatrix);
+            case 1:     panel.shadingCheckbox.setSelected(false);
+                        mip(viewMatrix);
                         break;
-            case 2:     compositing(viewMatrix);
+            case 2:     panel.shadingCheckbox.setSelected(false);
+                        compositing(viewMatrix);
                         break;
             case 3:     twodtransfer(viewMatrix, panel.shadingCheckbox.isSelected());
                         break;
-            case 4:     twodtransfer(viewMatrix, panel.shadingCheckbox.isSelected());
+            case 4:     panel.tf2dButton.setSelected(true);
+                        twodtransfer(viewMatrix, panel.shadingCheckbox.isSelected());
                         break;
             default:    System.out.println("Invalid renderer method.");
                         break;
