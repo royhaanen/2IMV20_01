@@ -351,7 +351,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         } 
     }
     
-    void twodtransfer(double[] viewMatrix, boolean illumination) {
+    void twodtransfer(double[] viewMatrix, boolean illumination, boolean extendedWidget) {
 
          // clear image
         for (int j = 0; j < image.getHeight(); j++) {
@@ -434,7 +434,10 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                         if (val == definedIntensity && voxGrad.mag == 0) {
                             voxelColor.a = definedColor.a * 1.0;
                         }
-                        else if (voxGrad.mag > 0.0 && ((val - definedRadius * voxGrad.mag) <= definedIntensity) && ((val + definedRadius * voxGrad.mag) >= definedIntensity) )  {
+                        else if (!extendedWidget && voxGrad.mag > 0.0 && ((val - definedRadius * voxGrad.mag) <= definedIntensity) && ((val + definedRadius * voxGrad.mag) >= definedIntensity) )  {
+                            voxelColor.a = definedColor.a * (1.0 - (1 / definedRadius) * (Math.abs((definedIntensity - val)/ voxGrad.mag)));
+                        }
+                        else if (extendedWidget && voxGrad.mag > 0.0 && (val <= definedIntensity) && ((val + definedRadius * voxGrad.mag) >= definedIntensity) )  {
                             voxelColor.a = definedColor.a * (1.0 - (1 / definedRadius) * (Math.abs((definedIntensity - val)/ voxGrad.mag)));
                         }
                         else 
@@ -633,10 +636,10 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                         panel.compositingButton.setSelected(true);
                         compositing(viewMatrix, panel.triLinearCheckbox.isSelected());
                         break;
-            case 3:     twodtransfer(viewMatrix, panel.shadingCheckbox.isSelected());
+            case 3:     twodtransfer(viewMatrix, panel.shadingCheckbox.isSelected(), tfEditor2D.extendedWidget.isSelected());
                         break;
             case 4:     panel.tf2dButton.setSelected(true);
-                        twodtransfer(viewMatrix, panel.shadingCheckbox.isSelected());
+                        twodtransfer(viewMatrix, panel.shadingCheckbox.isSelected(), tfEditor2D.extendedWidget.isSelected());
                         break;
             default:    System.out.println("Invalid renderer method.");
                         break;
