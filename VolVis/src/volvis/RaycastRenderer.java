@@ -262,7 +262,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         } 
     }
     
-    void compositing(double[] viewMatrix) {
+    void compositing(double[] viewMatrix, boolean triLinearInterpolation) {
 
         // clear image
         for (int j = 0; j < image.getHeight(); j++) {
@@ -314,11 +314,14 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                     pixelCoord[2] = uVec[2] * (i - imageCenter) + vVec[2] * (j - imageCenter)
                             + volumeCenter[2] + t * viewVec[2];
 
-                    // Use the line below for non-interpolated values
-                    int val = getVoxel(pixelCoord);
                     
-                    // Use the line below for tri-linear interpolated values
-                    //int val = triLinearInterpolation(pixelCoord);
+                    int val = 0;
+                    if (triLinearInterpolation) {
+                        val = triLinearInterpolation(pixelCoord);
+                    }
+                    else {
+                        val = getVoxel(pixelCoord);
+                    }
                     
                     if ( ( (pixelCoord[0] < volume.getDimX() && pixelCoord[0] >= 0) || (pixelCoord[1] < volume.getDimY() && pixelCoord[1] >= 0) || (pixelCoord[2] < volume.getDimZ() && pixelCoord[2] >= 0) ) && val > threshold) {
                         
@@ -378,7 +381,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         int alpha = 10;
         double k_spec = 0.2;
         double k_diff = 0.7;
-        double k_ambient = 0.1;
+        double k_ambient = 0.7;
         // Assuming White color light
         
         // image is square
@@ -627,7 +630,8 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                         mip(viewMatrix);
                         break;
             case 2:     panel.shadingCheckbox.setSelected(false);
-                        compositing(viewMatrix);
+                        panel.compositingButton.setSelected(true);
+                        compositing(viewMatrix, panel.triLinearCheckbox.isSelected());
                         break;
             case 3:     twodtransfer(viewMatrix, panel.shadingCheckbox.isSelected());
                         break;

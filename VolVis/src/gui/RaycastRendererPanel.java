@@ -49,6 +49,8 @@ public class RaycastRendererPanel extends javax.swing.JPanel {
         shadingCheckbox = new javax.swing.JCheckBox();
         stepSize = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        triLinearCheckbox = new javax.swing.JCheckBox();
 
         jLabel1.setText("Rendering time (ms):");
 
@@ -103,6 +105,15 @@ public class RaycastRendererPanel extends javax.swing.JPanel {
 
         jLabel2.setText("Step Size");
 
+        jLabel3.setText("Tri Linear Interpolation");
+
+        triLinearCheckbox.setToolTipText("Use Tri Linear Interpolation or non-interpolated values");
+        triLinearCheckbox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                triLinearCheckboxActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -120,11 +131,17 @@ public class RaycastRendererPanel extends javax.swing.JPanel {
                         .addComponent(mipButton)
                         .addComponent(slicerButton)
                         .addComponent(shadingCheckbox)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 148, Short.MAX_VALUE)
-                .addComponent(jLabel2)
+                .addGap(31, 31, 31)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel3)
+                    .addComponent(jLabel2))
                 .addGap(18, 18, 18)
-                .addComponent(stepSize, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(57, 57, 57))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(stepSize, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(13, 13, 13)
+                        .addComponent(triLinearCheckbox)))
+                .addContainerGap(147, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -141,7 +158,10 @@ public class RaycastRendererPanel extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(mipButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(compositingButton)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(compositingButton)
+                    .addComponent(jLabel3)
+                    .addComponent(triLinearCheckbox))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(tf2dButton)
                 .addGap(18, 18, 18)
@@ -179,16 +199,23 @@ public class RaycastRendererPanel extends javax.swing.JPanel {
         renderer.changed();
     }//GEN-LAST:event_stepSizeActionPerformed
 
+    private void triLinearCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_triLinearCheckboxActionPerformed
+        renderer.setMode(2);
+        renderer.changed();
+    }//GEN-LAST:event_triLinearCheckboxActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
-    private javax.swing.JRadioButton compositingButton;
+    public javax.swing.JRadioButton compositingButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JRadioButton mipButton;
     private javax.swing.JLabel renderingSpeedLabel;
     public javax.swing.JCheckBox shadingCheckbox;
     private javax.swing.JRadioButton slicerButton;
     public javax.swing.JTextField stepSize;
     public javax.swing.JRadioButton tf2dButton;
+    public javax.swing.JCheckBox triLinearCheckbox;
     // End of variables declaration//GEN-END:variables
 }
